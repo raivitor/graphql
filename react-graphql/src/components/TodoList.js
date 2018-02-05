@@ -15,6 +15,7 @@ class TodoList extends Component {
         this.props.todos.refetch();
       },
     })
+    this.setState({ todoText: '' })
   };
 
   delTodo = (idToDel) => {
@@ -33,6 +34,7 @@ class TodoList extends Component {
         this.props.todos.refetch();
       },
     })
+    this.setState({ todoText: '' })
   };
 
   renderTodoList = () => (
