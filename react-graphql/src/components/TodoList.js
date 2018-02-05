@@ -5,14 +5,12 @@ import gql from 'graphql-tag';
 
 class TodoList extends Component {
   state = {
-    newTodoText: '',
+    todoText: '',
   }
 
   addTodo = () => {
-    const { newTodoText } = this.state;
-
     this.props.addTodo({
-      variables: { text: newTodoText },
+      variables: { text: this.state.todoText },
       update: (proxy, { data: { createTodo } }) => {
         this.props.todos.refetch();
       },
@@ -23,6 +21,15 @@ class TodoList extends Component {
     this.props.delTodo({
       variables: { id: idToDel },
       update: (proxy, { data: { deleteTodo } }) => {
+        this.props.todos.refetch();
+      },
+    })
+  };
+
+  updateTodo = (idToUpdate) => {
+    this.props.updateTodo({
+      variables: { id: idToUpdate, text: this.state.todoText },
+      update: (proxy, { data: { updateTodo } }) => {
         this.props.todos.refetch();
       },
     })
@@ -39,6 +46,13 @@ class TodoList extends Component {
             onClick={e => this.delTodo(todo.id)}
           />
           <span>&nbsp;</span>
+          <input
+            type="submit"
+            value="Edit"
+            style={{ color: 'blue' }}
+            onClick={e => this.updateTodo(todo.id)}
+          />
+          <span>&nbsp;</span>
           {todo.text}
         </li>
       )}
@@ -51,6 +65,11 @@ class TodoList extends Component {
 
     return (
       <Fragment>
+        <div>
+          <p>Aqui a usabilidade passou longe, mas é o que temos para hoje =/ </p>
+          <p>Amanhã sai da versão alpha e vai para o beta :)</p>
+          <p>Para editar alguma coisa, digite o novo valor na caixa de texto e depois clique no botão "edit" no item da lista que deseja alterar o valor. "Simples assim ;)"</p>
+        </div>
         {todos.loading
           ? <p>Carregando...</p>
           : this.renderTodoList()}
@@ -59,8 +78,8 @@ class TodoList extends Component {
 
         <input
           type="text"
-          value={this.state.newTodoText}
-          onChange={e => this.setState({ newTodoText: e.target.value })}
+          value={this.state.todoText}
+          onChange={e => this.setState({ todoText: e.target.value })}
         />
         <span>&nbsp;</span>
         <input type="submit" value="Criar" onClick={this.addTodo} />
@@ -74,7 +93,6 @@ const TodosQuery = gql`
     allTodoes {
       id
       text
-     # completed
     }
   }
 `;
@@ -84,7 +102,6 @@ const TodoMutation = gql`
     createTodo ( text: $text ) {
       id
       text
-      # completed
     }
   }
 `;
@@ -94,7 +111,15 @@ const TodoDeleteMutation = gql`
     deleteTodo ( id: $id ) {
       id
       text
-      # completed
+    }
+  }
+`;
+
+const TodoUpdateMutation = gql`
+  mutation ($id: ID!, $text: String!) {
+    updateTodo ( id: $id, text: $text ) {
+      id
+      text
     }
   }
 `;
@@ -103,4 +128,5 @@ export default compose(
   graphql(TodosQuery, { name: 'todos' }),
   graphql(TodoMutation, { name: 'addTodo' }),
   graphql(TodoDeleteMutation, { name: 'delTodo' }),
+  graphql(TodoUpdateMutation, { name: 'updateTodo' }),
 )(TodoList);
